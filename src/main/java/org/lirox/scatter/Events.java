@@ -86,7 +86,7 @@ public class Events implements Listener {
 
         event.setCancelled(true);
 
-        configManager.scatteredPlayers.put(victim.getName(), new Scatterred(victim.getName(), killer.getName(), hitsTillFinalize, 1, 0, 0, victim.getLocation()));
+        configManager.scatteredPlayers.put(victim.getName(), new Scatterred(victim.getName(), killer.getName(), hitsTillFinalize, 1, 0, 2400, victim.getLocation()));
 
         victim.setHealth(victim.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
@@ -142,6 +142,7 @@ public class Events implements Listener {
 
     private void finalizeTrap(Player victim) {
         Scatterred scatterred = configManager.scatteredPlayers.get(victim.getName());
+        scatterred.pos = victim.getLocation();
         scatterred.state = 2;
 
         PlayerUtils.setVisibilityToAllPlayers(victim, true);

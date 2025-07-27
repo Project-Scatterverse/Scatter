@@ -43,28 +43,34 @@ public final class Scatter extends JavaPlugin implements Listener {
 
     private void spawnParticlesLoop() {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (Map.Entry<String, Location> entry : configManager.scatteredPlayersDeathPos.entrySet()) {
-                String playerName = entry.getKey();
-                Location deathPos = entry.getValue();
-                deathPos.getWorld().spawnParticle(Particle.END_ROD, deathPos, 5, 10, 10, 10, 0.05);
-                deathPos.getWorld().spawnParticle(Particle.DRAGON_BREATH, deathPos, 1, 0.3, 0.3, 0.3, 0.05);
-                Player player = Bukkit.getPlayer(playerName);
-                if (player != null) {
-                    deathPos.getWorld().spawnParticle(Particle.TOTEM, deathPos, 1, 0.3, 0.3, 0.3, 0.02);
-                    player.setExp(rand.nextFloat());
-                }
-            }
-            for (Map.Entry<String, Integer> entry : configManager.chainAnimation.entrySet()) {
-                String playerName = entry.getKey();
-                Integer state = entry.getValue();
-                Player player = Bukkit.getPlayer(playerName);
+            for (Map.Entry<String, Scatterred> entry : configManager.scatteredPlayers.entrySet()) {
+                Player player = Bukkit.getPlayer(entry.getKey());
+                Scatterred scatterred = entry.getValue();
+                Location deathPos = scatterred.pos;
 
-                if (player != null) {
-                    float radius = (float) ((state < 20) ? 0.5 + (1 - ((float) state / 20)) : 0.5);
+                if (scatterred.state == 2) {
+                    if (player != null) {
+                        deathPos.getWorld().spawnParticle(Particle.END_ROD, deathPos, 5, 10, 10, 10, 0.05);
+                        player.setExp(rand.nextFloat());
+                    }
+                    deathPos.getWorld().spawnParticle(Particle.DRAGON_BREATH, deathPos, 1, 0.3, 0.3, 0.3, 0.05);
+                    deathPos.getWorld().spawnParticle(Particle.TOTEM, deathPos, 1, 0.3, 0.3, 0.3, 0.02);
+                } else if (scatterred.state == 1) {
+                    if (player == null) continue;
+
+                    scatterred.animationTime++;
+                    scatterred.timeout--;
+                    if (scatterred.timeout <= 0) {
+                        configManager.scatteredPlayers.remove(scatterred.victim);
+                        continue;
+                    }
+
+                    int time = scatterred.animationTime;
+                    float radius = (float) ((time < 20) ? 0.5 + (1 - ((float) time / 20)) : 0.5);
                     Location center = player.getLocation();
 
                     for (int i = 0; i < 4; i++) {
-                        double angle = Math.toRadians(state / 5.0 + i * 90);
+                        double angle = Math.toRadians(time / 5.0 + i * 90);
                         double offsetX = radius * Math.cos(angle);
                         double offsetZ = radius * Math.sin(angle);
 
@@ -75,7 +81,6 @@ public final class Scatter extends JavaPlugin implements Listener {
                         player.getWorld().spawnParticle(Particle.REDSTONE, center, 1, new Particle.DustOptions(Color.YELLOW, 1));
                         center.subtract(rotatedX, rotatedY, offsetZ);
 
-
                         offsetX = radius * Math.cos(-angle);
                         offsetZ = radius * Math.sin(-angle);
 
@@ -85,12 +90,6 @@ public final class Scatter extends JavaPlugin implements Listener {
                         center.add(rotatedX, rotatedY, offsetZ);
                         player.getWorld().spawnParticle(Particle.REDSTONE, center, 1, new Particle.DustOptions(Color.YELLOW, 1));
                         center.subtract(rotatedX, rotatedY, offsetZ);
-                    }
-                    configManager.chainAnimation.put(playerName, state+1);
-                    if (state > 3600) {
-                        configManager.chainAnimation.remove(playerName);
-                        configManager.trappedHitCount.remove(playerName);
-                        configManager.victimToKiller.remove(playerName);
                     }
                 }
             }
