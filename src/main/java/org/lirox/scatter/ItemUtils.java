@@ -4,9 +4,17 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Consumer;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.lirox.scatter.Scatter.SCATTER_KEY;
+
 public class ItemUtils {
+    public static List<Integer> SCATTER_VALUES = List.of(1, 3);
+    public static List<Integer> REVIVER_VALUES = List.of(2, 3);
     public static Consumer<ItemStack> decrementOrRemove = item -> {
         if (item.getAmount() > 1) item.setAmount(item.getAmount() - 1);
         else item.setAmount(0);
@@ -17,8 +25,7 @@ public class ItemUtils {
     public static boolean isScatter(ItemStack item) {
         return item != null && item.getType() != Material.AIR &&
                 item.getItemMeta() != null &&
-                item.getItemMeta().hasCustomModelData() &&
-                (item.getItemMeta().getCustomModelData() == 1 || item.getItemMeta().getCustomModelData() == 3);
+                SCATTER_VALUES.contains(item.getItemMeta().getPersistentDataContainer().getOrDefault(SCATTER_KEY, PersistentDataType.INTEGER, 0));
     }
 
     public static boolean hasScatterOffHand(Player player) {
@@ -42,8 +49,7 @@ public class ItemUtils {
     public static boolean isReviver(ItemStack item) {
         return item != null && item.getType() != Material.AIR &&
                 item.getItemMeta() != null &&
-                item.getItemMeta().hasCustomModelData() &&
-                (item.getItemMeta().getCustomModelData() == 2 || item.getItemMeta().getCustomModelData() == 3);
+                REVIVER_VALUES.contains(item.getItemMeta().getPersistentDataContainer().getOrDefault(SCATTER_KEY, PersistentDataType.INTEGER, 0));
     }
 
     public static boolean hasReviverOffHand(Player player) {

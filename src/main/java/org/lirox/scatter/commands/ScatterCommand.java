@@ -8,6 +8,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+
+import static org.lirox.scatter.Scatter.SCATTER_KEY;
 
 public class ScatterCommand implements CommandExecutor {
 
@@ -26,19 +30,19 @@ public class ScatterCommand implements CommandExecutor {
         }
 
         if (args.length == 0) {
-            player.sendMessage(ChatColor.RED + "Usage: /" + label + " <0-3>");
+            player.sendMessage(ChatColor.RED + "Usage: /" + label + " <0-3>, 0 - None, 1 - Scatter, 2 - Reviver, 3 - Both.");
             return true;
         }
 
-        int customModelData;
+        int value;
         try {
-            customModelData = Integer.parseInt(args[0]);
+            value = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
             player.sendMessage(ChatColor.RED + "Invalid number. 0 - None, 1 - Scatter, 2 - Reviver, 3 - Both.");
             return true;
         }
 
-        if (customModelData < 0 || customModelData > 3) {
+        if (value < 0 || value > 3) {
             player.sendMessage(ChatColor.RED + "Invalid number. 0 - None, 1 - Scatter, 2 - Reviver, 3 - Both.");
             return true;
         }
@@ -56,8 +60,8 @@ public class ScatterCommand implements CommandExecutor {
             return true;
         }
 
-        meta.setCustomModelData(customModelData);
-        item.setItemMeta(meta);
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        data.set(SCATTER_KEY, PersistentDataType.INTEGER, value);
         player.sendMessage(ChatColor.GREEN + "Done.");
         return true;
     }
