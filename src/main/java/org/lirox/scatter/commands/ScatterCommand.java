@@ -62,6 +62,7 @@ public class ScatterCommand implements CommandExecutor {
 
         PersistentDataContainer data = meta.getPersistentDataContainer();
         data.set(SCATTER_KEY, PersistentDataType.INTEGER, value);
+        item.setItemMeta(meta);
         player.sendMessage(ChatColor.GREEN + "Done.");
         return true;
     }
