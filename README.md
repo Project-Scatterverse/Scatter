@@ -3,7 +3,7 @@
 ## Features:
 - permakill items
 - revive items (if you desire)
-- ghosts
+- ghosts (which can control mobs)
 - idk, suggest something in [Discord](https://discord.gg/egN2MaYQZu) if you want
 
 ## Usage:

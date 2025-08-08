@@ -1,5 +1,5 @@
 package org.lirox.scatter;
 
 public class ParticleRegistry {
-    // todo: do
+    // todo: do, mb rename
 }

@@ -7,6 +7,12 @@ commands:
   scatter:
     description: "* 0 - none, 1 - scatter, 2 - reviver, 3 - both"
     usage: "/<command> 0/1/2/3"
-  unbreakable:
-    description: "* toggle unbreakable"
+#  unbreakable:
+#    description: "* toggle unbreakable"
+#    usage: "/<command>"
+  trap:
+    description: "* toggle trap"
+    usage: "/<command>"
+  ghost:
+    description: "* toggle ghost"
     usage: "/<command>"

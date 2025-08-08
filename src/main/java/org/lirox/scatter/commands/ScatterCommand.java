@@ -17,12 +17,10 @@ public class ScatterCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage(ChatColor.RED + "Only players can use this command.");
             return true;
         }
-
-        Player player = (Player) sender;
 
         if (!player.isOp()) {
             player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
