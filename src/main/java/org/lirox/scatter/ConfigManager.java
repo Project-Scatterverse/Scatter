@@ -3,13 +3,18 @@ package org.lirox.scatter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.lirox.scatter.Scatter.plugin;
 
 public class ConfigManager {
 
     private final FileConfiguration config;
     public final Map<String, Scatterred> scatteredPlayers = new HashMap<>();
+    public final Map<String, Entity> controlledMobs = new HashMap<>();
 
     public ConfigManager(FileConfiguration config) {
         this.config = config;
@@ -32,6 +37,7 @@ public class ConfigManager {
 
     public void save() {
         for (Map.Entry<String, Scatterred> entry : scatteredPlayers.entrySet()) {
+            if (entry.getValue().state != 2) continue;
             String playerName = entry.getKey();
             config.set("players." + playerName + ".killer", entry.getValue().killer);
 
@@ -43,5 +49,6 @@ public class ConfigManager {
                 config.set("players." + playerName + ".death_world", deathPos.getWorld().getName());
             }
         }
+        plugin.saveConfig();
     }
 }

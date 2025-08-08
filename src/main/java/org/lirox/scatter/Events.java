@@ -5,14 +5,13 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityResurrectEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +26,7 @@ import static org.lirox.scatter.Scatter.*;
 public class Events implements Listener {
     private final Plugin plugin;
 
-    public int hitsTillFinalize = 3;
+    public final static int hitsTillFinalize = 3;
     public float max_final_hp_mul = .5f;
 
 //    public ArrayList<Material> offhand_binding_curse = new ArrayList<>();
@@ -55,20 +54,16 @@ public class Events implements Listener {
             if (deathLocation.distance(player.getLocation()) <= 5) {
                 Player victim = Bukkit.getPlayer(victimName);
                 if (victim == null) {
-                    player.sendMessage(Component.text("<> This player is offline. Go wake them up or smh."));
+                    player.sendMessage(Component.text("<> This player is offline. Go wake them up or smth.")); // TODO: Move in TextManager
                     return;
                 }
 
-                configManager.scatteredPlayers.remove(victim.getName());
+                PlayerUtils.revive(victim);
 
                 victim.teleport(deathLocation);
-                victim.setGameMode(GameMode.SURVIVAL);
-                victim.setCanPickupItems(true);
-                PlayerUtils.setVisibilityToAllPlayers(victim, true);
-
-                player.getWorld().playSound(player.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, 1);
-                player.getWorld().playSound(player.getLocation(), Sound.BLOCK_BELL_RESONATE, 1, 1);
-                victim.sendMessage(Component.text("<> You have been revived by " + player.getName()));
+                victim.getWorld().playSound(player.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, 1);
+                victim.getWorld().playSound(player.getLocation(), Sound.BLOCK_BELL_RESONATE, 1, 1);
+                victim.sendMessage(Component.text("<> You have been revived by " + player.getName())); // TODO: Move in TextManager
                 droppedItem.remove();
 
                 break;
@@ -86,7 +81,7 @@ public class Events implements Listener {
 
         event.setCancelled(true);
 
-        configManager.scatteredPlayers.put(victim.getName(), new Scatterred(victim.getName(), killer.getName(), hitsTillFinalize, 1, 0, 2400, victim.getLocation()));
+        PlayerUtils.trap(victim, killer);
 
         victim.setHealth(victim.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
@@ -126,7 +121,7 @@ public class Events implements Listener {
         if (!(event.getDamager() instanceof Player damager)) return;
 
         if (damager.getName().equals(scatterred.killer) && damager.getInventory().getItemInMainHand().getType().isAir()) {
-            configManager.scatteredPlayers.remove(victim.getName());
+            PlayerUtils.release(victim);
             return;
         }
 
@@ -134,18 +129,14 @@ public class Events implements Listener {
             scatterred.remainingHits--;
             victim.damage(1);
             victim.setHealth(1 + (victim.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() - 1) * ((double) scatterred.remainingHits / hitsTillFinalize));
-            damager.sendMessage(Component.text("<> " + (hitsTillFinalize - scatterred.remainingHits) + "/" + hitsTillFinalize));
+            damager.sendMessage(Component.text("<> " + (hitsTillFinalize - scatterred.remainingHits) + "/" + hitsTillFinalize)); // TODO: Move in TextManager
             damager.getWorld().playSound(damager.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_BREAK, 1, 1);
             if (scatterred.remainingHits <= 0) finalizeTrap(victim);
         }
     }
 
     private void finalizeTrap(Player victim) {
-        Scatterred scatterred = configManager.scatteredPlayers.get(victim.getName());
-        scatterred.pos = victim.getLocation();
-        scatterred.state = 2;
-
-        PlayerUtils.setVisibilityToAllPlayers(victim, true);
+        PlayerUtils.scatter(victim, configManager.scatteredPlayers.get(victim.getName()).killer);
 
         victim.getWorld().playSound(victim.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
         victim.getWorld().spawnParticle(Particle.TOTEM, victim.getLocation(), 50);
@@ -153,7 +144,7 @@ public class Events implements Listener {
         PlayerUtils.dropInventory(victim);
         PlayerUtils.dropEnderChest(victim);
 
-        victim.kick(Component.text("There is no way back... Or is it?"));
+        victim.kick(Component.text("There is no way back... Or is it?")); // TODO: Move in TextManager
     }
 
     @EventHandler
@@ -163,22 +154,33 @@ public class Events implements Listener {
         }
     }
 
+    // -------------------- Ghost movement, interaction, messages, etc
+
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!PlayerUtils.isTrapped(player)) return;
+        if (PlayerUtils.isTrapped(player)) {
 
-        Location loc = event.getFrom();
-        loc.setPitch(event.getTo().getPitch());
-        loc.setYaw(event.getTo().getYaw());
-        if (loc.getY() < event.getTo().getY()) loc.setY(event.getTo().getY());
+            Location from = event.getFrom();
+            Location to = event.getTo();
 
-        player.teleport(loc);
+            Location loc = from.clone();
+            loc.setPitch(to.getPitch());
+            loc.setYaw(to.getYaw());
+
+            if (loc.getY() < to.getY()) loc.setY(to.getY());
+
+            player.teleport(loc);
+        } else if (configManager.controlledMobs.containsKey(event.getPlayer().getName())) { // TODO: Move in PlayerUtils : isMounted
+            Entity mob = configManager.controlledMobs.get(player.getName()); // TODO: Move in PlayerUtils : getMount
+            Location to = event.getTo();
+            mob.teleport(to);
+            mob.setRotation(to.getYaw(), to.getPitch());
+        }
     }
 
 
 
-    // -------------------- Ghost movement, interaction, messages, etc
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (PlayerUtils.isScatterAffected(event.getPlayer())) event.setCancelled(true);
@@ -200,7 +202,10 @@ public class Events implements Listener {
         Player player = event.getPlayer();
         if (!PlayerUtils.isScatterAffected(player)) return;
 
-        if (PlayerUtils.isScattered(player)) event.quitMessage(null);
+        if (PlayerUtils.isScattered(player)) {
+            event.quitMessage(null);
+            configManager.controlledMobs.remove(player.getName());
+        }  // TODO: Move in PlayerUtils : dismount
         if (PlayerUtils.isTrapped(player)) finalizeTrap(event.getPlayer());
     }
 
@@ -216,10 +221,32 @@ public class Events implements Listener {
 
     @EventHandler
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        if (PlayerUtils.isScattered(event.getPlayer())) event.setCancelled(true);
+        if (PlayerUtils.isScattered(event.getPlayer()) && !event.getPlayer().isOp()) event.setCancelled(true);
     }
 
+    @EventHandler
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        LivingEntity mob = (LivingEntity) event.getRightClicked();
+        if (PlayerUtils.isScattered(player) && !blockedControl.contains(mob.getType())) {
+            configManager.controlledMobs.put(player.getName(), mob);
+            player.teleport(mob.getLocation());
+            event.setCancelled(true);
+        }
+    } // TODO: Move in PlayerUtils : mount
 
+    @EventHandler
+    public void onPlayerDoSneak(PlayerToggleSneakEvent event) {
+        Player player = event.getPlayer();
+        if (event.isSneaking() && PlayerUtils.isScattered(player)) {
+            configManager.controlledMobs.remove(player.getName());
+        }
+    } // TODO: Move in PlayerUtils : dismount
+
+    @EventHandler
+    public void onEntityTarget(EntityTargetEvent event) {
+        if (event.getTarget() instanceof Player player && PlayerUtils.isScattered(player)) event.setCancelled(true);
+    }
 
 //    // -------------------------------------- Binding Curse
 //    @EventHandler
@@ -246,5 +273,5 @@ public class Events implements Listener {
 //        if (Scatter.isScatter(item) && item.containsEnchantment(Enchantment.BINDING_CURSE) && offhand_binding_curse.contains(item.getType()) && !event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
 //            event.setCancelled(true);
 //        }
-//    }
+//    } idk waht to do with this
 }
