@@ -1,18 +1,18 @@
-package org.lirox.scatter;
+package dev.lirox.scatter.utils;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.util.Consumer;
+import java.util.function.Consumer;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.lirox.scatter.Scatter.SCATTER_KEY;
+import static dev.lirox.scatter.registries.Registry.SCATTER_KEY;
 
 public class ItemUtils {
+    // TODO: instead set a list of numbers/strings in item so you can make more dangerous weaponry
     public static List<Integer> SCATTER_VALUES = List.of(1, 3);
     public static List<Integer> REVIVER_VALUES = List.of(2, 3);
     public static Consumer<ItemStack> decrementOrRemove = item -> {

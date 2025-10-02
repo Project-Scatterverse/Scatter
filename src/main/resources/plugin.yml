@@ -1,18 +1,18 @@
 name: Scatter
 version: '${version}'
-main: org.lirox.scatter.Scatter
-api-version: '1.18'
-prefix: [Scatter]
+main: dev.lirox.scatter.Scatter
+api-version: '1.21'
+prefix: "[Scatter]"
 commands:
   scatter:
-    description: "* 0 - none, 1 - scatter, 2 - reviver, 3 - both"
-    usage: "/<command> 0/1/2/3"
+    description: "* "
+    usage: "/<command> uhhh well uhhhhhhhhhhhhhhhhhhhhhhhhhhh"
 #  unbreakable:
 #    description: "* toggle unbreakable"
 #    usage: "/<command>"
-  trap:
-    description: "* toggle trap"
-    usage: "/<command>"
-  ghost:
-    description: "* toggle ghost"
-    usage: "/<command>"
+#  trap:
+#    description: "* toggle trap"
+#    usage: "/<command> player (optional)"
+#  ghost:
+#    description: "* toggle ghost"
+#    usage: "/<command> player (optional)"

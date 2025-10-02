@@ -1,11 +1,14 @@
-package org.lirox.scatter.commands;
+package dev.lirox.scatter.commands;
 
+import dev.lirox.scatter.states.Ghost;
+import dev.lirox.scatter.states.Meowthpiece;
+import dev.lirox.scatter.states.Trapped;
+import dev.lirox.scatter.utils.PlayerUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.lirox.scatter.PlayerUtils;
 
 public class TrapCommand implements CommandExecutor {
 
@@ -21,13 +24,13 @@ public class TrapCommand implements CommandExecutor {
             return true;
         }
 
-        if (PlayerUtils.isScattered(player)) {
+        if (PlayerUtils.isState(player, Ghost.class) || PlayerUtils.isState(player, Meowthpiece.class)) {
             player.sendMessage(ChatColor.RED + "Nuh uh.");
             return true;
         }
 
-        if (PlayerUtils.isTrapped(player)) PlayerUtils.release(player);
-        else PlayerUtils.trap(player, player.getName());
+        if (PlayerUtils.isState(player, Trapped.class)) PlayerUtils.release(player);
+        else PlayerUtils.trap(player);
 
         player.sendMessage(ChatColor.GREEN + "Done.");
         return true;

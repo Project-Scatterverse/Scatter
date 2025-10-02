@@ -1,4 +1,4 @@
-package org.lirox.scatter.commands;
+package dev.lirox.scatter.commands;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -11,7 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import static org.lirox.scatter.Scatter.SCATTER_KEY;
+import static dev.lirox.scatter.registries.Registry.SCATTER_KEY;
 
 public class ScatterCommand implements CommandExecutor {
 

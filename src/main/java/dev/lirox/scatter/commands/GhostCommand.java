@@ -1,19 +1,12 @@
-package org.lirox.scatter.commands;
+package dev.lirox.scatter.commands;
 
+import dev.lirox.scatter.states.Ghost;
+import dev.lirox.scatter.utils.PlayerUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.lirox.scatter.PlayerUtils;
-
-import static org.lirox.scatter.Scatter.SCATTER_KEY;
-import static org.lirox.scatter.Scatter.configManager;
 
 public class GhostCommand implements CommandExecutor {
 
@@ -29,8 +22,8 @@ public class GhostCommand implements CommandExecutor {
             return true;
         }
 
-        if (PlayerUtils.isScattered(player)) PlayerUtils.revive(player);
-        else PlayerUtils.scatter(player, player.getName());
+        if (PlayerUtils.isState(player, Ghost.class)) PlayerUtils.revive(player, false);
+        else PlayerUtils.scatter(player, false);
 
         player.sendMessage(ChatColor.GREEN + "Done.");
         return true;

@@ -1,0 +1,4 @@
+revive.offline: "<> This player is offline. Go wake them up or smth."
+revive.revived: "<> You have been revived by {player}"
+scatter.kick: "There is no way back... Or is it?"
+scatter.hit: "<> {hits}/{total}"
