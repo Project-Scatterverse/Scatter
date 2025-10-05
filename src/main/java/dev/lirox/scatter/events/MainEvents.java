@@ -21,6 +21,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 import java.util.Objects;
@@ -44,7 +45,7 @@ public class MainEvents implements Listener {
         Player player = event.getPlayer();
         if (PlayerUtils.isState(player, Ghost.class)) {
             event.joinMessage(null);
-            PlayerUtils.getState(player, Ghost.class).dismount();
+            PlayerUtils.prepareGhost(player, true);
         } else if (PlayerUtils.isState(player, Meowthpiece.class)) {
             event.joinMessage(null);
             PlayerUtils.prepareMeowthpiece(player, false);
@@ -58,7 +59,7 @@ public class MainEvents implements Listener {
         if (PlayerUtils.isState(player, Ghost.class)) return;
 
         Item droppedItem = event.getItemDrop();
-        if (!ItemUtils.isReviver(droppedItem.getItemStack())) return;
+        if (!ItemUtils.hasProperty(droppedItem.getItemStack(), Registry.PROP_REVIVER)) return;
 
         for (Map.Entry<UUID, Scatterred> entry : Affected.map.entrySet()) {
             if (!(entry.getValue() instanceof Ghost ghost)) continue;
@@ -89,7 +90,7 @@ public class MainEvents implements Listener {
         Player victim = event.getEntity();
         Player killer = victim.getKiller();
         if (killer == null) return;
-        if (!ItemUtils.hasScatter(killer)) return;
+        if (ItemUtils.getFirstScatterItem(killer) == null) return;
 
         event.setCancelled(true);
 
@@ -114,24 +115,29 @@ public class MainEvents implements Listener {
             return;
         }
 
+        PlayerUtils.tag(victim);
+
         if (!PlayerUtils.isState(victim, Trapped.class)) return;
 
         Trapped trapped = PlayerUtils.getState(victim, Trapped.class);
 
         if (!(event.getDamager() instanceof Player damager)) return;
 
-        if (damager.getUniqueId().equals(trapped.killer) && damager.getInventory().getItemInMainHand().getType().isAir()) {
+        if (damager.getUniqueId().equals(trapped.killer) && ItemUtils.mainHand(damager).getType().isAir()) {
             PlayerUtils.release(victim);
             return;
         }
 
-        if (ItemUtils.hasScatter(damager)) {
+        if (ItemUtils.getFirstScatterItem(damager) instanceof ItemStack item) {
             trapped.remainingHits--;
             victim.damage(1);
             victim.setHealth(1 + (victim.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() - 1) * ((double) trapped.remainingHits / hitsTillFinalize));
             damager.sendMessage(TextUtils.locale("scatter.hit", Map.of("hits", String.valueOf(Registry.hitsTillFinalize - trapped.remainingHits), "total", String.valueOf(hitsTillFinalize))));
             damager.getWorld().playSound(damager.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_BREAK, 1, 1);
-            if (trapped.remainingHits <= 0) PlayerUtils.scatter(victim, true);
+            if (trapped.remainingHits <= 0) {
+                PlayerUtils.scatter(victim, true);
+                ItemUtils.decrementItem(item);
+            }
         }
     }
 }

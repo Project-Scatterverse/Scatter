@@ -1,21 +1,16 @@
 package dev.lirox.scatter.utils;
 
 import dev.lirox.scatter.Affected;
-import dev.lirox.scatter.Scatter;
-import dev.lirox.scatter.states.Ghost;
-import dev.lirox.scatter.states.Meowthpiece;
-import dev.lirox.scatter.states.Scatterred;
-import dev.lirox.scatter.states.Trapped;
-import net.kyori.adventure.text.Component;
+import dev.lirox.scatter.states.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import dev.lirox.scatter.registries.Registry;
+import org.bukkit.util.Vector;
 
 import java.util.UUID;
-
-import static dev.lirox.scatter.registries.Registry.noMobPushTeam;
 
 public class PlayerUtils {
     public static Object getPlayerData(UUID uuid) {
@@ -30,8 +25,8 @@ public class PlayerUtils {
 
     // Visibility
     public static void setVisibilityToPlayer(Player player, Player seeker, boolean visibility) {
-        if (visibility) seeker.showPlayer(Scatter.plugin, player);
-        else seeker.hidePlayer(Scatter.plugin, player);
+        if (visibility) seeker.showPlayer(Registry.plugin, player);
+        else seeker.hidePlayer(Registry.plugin, player);
     }
 
     public static void setVisibilityToAllPlayers(Player player, boolean visibility) {
@@ -41,15 +36,32 @@ public class PlayerUtils {
     }
 
     public static void setVisibilityToAllPlayersCornerVision(Player player, boolean visibility, int angle) {
-        // TODO: DO
+        Vector dir = player.getLocation().getDirection().normalize();
+        double cosAngle = Math.cos(Math.toRadians(angle));
+
+        for (Player other : player.getWorld().getPlayers()) {
+            if (other == player) continue;
+            if (player.getLocation().distanceSquared(other.getLocation()) > 250 * 250) continue;
+            if (isState(other, Meowthpiece.class)) {
+                setVisibilityToPlayer(other, player, true);
+                continue;
+            }
+
+            boolean inVision = dir.dot(other.getLocation().toVector().subtract(player.getLocation().toVector()).normalize()) >= cosAngle;
+
+            setVisibilityToPlayer(other, player, visibility && !inVision);
+        }
     }
+
 
 
     // State checking
     public static boolean isState(UUID uuid, Class<? extends Scatterred> type) {
         Scatterred s = Affected.get(uuid);
+        if (type == null) return s == null;
         return type.isInstance(s);
     }
+
 
     public static boolean isState(Player player, Class<? extends Scatterred> type) {
         return isState(player.getUniqueId(), type);
@@ -65,6 +77,13 @@ public class PlayerUtils {
         return getState(player.getUniqueId(), type);
     }
 
+    public static boolean isRegular(UUID uuid) {
+        return isState(uuid, null) || isState(uuid, Tagged.class);
+    }
+
+    public static boolean isRegular(Player player) {
+        return isRegular(player.getUniqueId());
+    }
 
 
     // Drop items
@@ -86,14 +105,17 @@ public class PlayerUtils {
 
     // Scattering and reviving
     public static void prepareRegular(Player player, boolean setHpSaturation) {
+        player.setAllowFlight(false);
+        player.setFlying(false);
         PlayerUtils.setVisibilityToAllPlayers(player, true);
         player.setGameMode(GameMode.SURVIVAL);
         player.setCanPickupItems(true);
-        noMobPushTeam.removePlayer(player);
+        Registry.noMobPushTeam.removePlayer(player);
         player.removePotionEffect(PotionEffectType.INVISIBILITY);
         if (setHpSaturation) {
             player.setHealth(10);
             player.setSaturation(10);
+            player.setFoodLevel(10);
         }
     }
 
@@ -101,11 +123,12 @@ public class PlayerUtils {
         PlayerUtils.setVisibilityToAllPlayers(player, false);
         player.setGameMode(GameMode.ADVENTURE);
         player.setCanPickupItems(false);
-        noMobPushTeam.addPlayer(player);
+        Registry.noMobPushTeam.addPlayer(player);
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
         if (setHpSaturation) {
             player.setHealth(1);
             player.setSaturation(0);
+            player.setFoodLevel(0);
         }
     }
 
@@ -115,6 +138,7 @@ public class PlayerUtils {
         if (setHpSaturation) {
             player.setHealth(20);
             player.setSaturation(20);
+            player.setFoodLevel(20);
         }
     }
 
@@ -155,6 +179,9 @@ public class PlayerUtils {
         if (teleport) player.teleport(ghost.death_pos);
         Affected.remove(uuid);
     }
+    public static void revive(Player victim) {
+        revive(victim.getUniqueId(), false);
+    }
 
     public static void revive(Player victim, boolean teleport) {
         revive(victim.getUniqueId(), teleport);
@@ -187,12 +214,50 @@ public class PlayerUtils {
         trap(uuid, uuid);
     }
 
-    public static void release(UUID uuid) {
-        if (!isState(uuid, Trapped.class)) return;
+    public static boolean release(UUID uuid) {
+        if (!isState(uuid, Trapped.class)) return false;
         Affected.remove(uuid);
+        return true;
+    }
+
+    public static void release(Player victim, boolean prepare) {
+        if (release(victim.getUniqueId())) {
+            if (prepare) prepareRegular(victim, true);
+        }
     }
 
     public static void release(Player victim) {
         release(victim.getUniqueId());
+    }
+
+    public static void meowthpiecefy(UUID uuid) {
+        Affected.put(uuid, new Meowthpiece(uuid, uuid));
+    }
+
+    public static void meowthpiecefy(Player victim) {
+        prepareMeowthpiece(victim, true);
+        meowthpiecefy(victim.getUniqueId());
+    }
+
+    public static boolean demeowthpiecefy(UUID uuid) {
+        if (isState(uuid, Meowthpiece.class)) {
+            Affected.remove(uuid);
+            return true;
+        }
+        return false;
+    }
+
+    public static void demeowthpiecefy(Player victim) {
+        if (demeowthpiecefy(victim.getUniqueId())) {
+            prepareRegular(victim, true);
+        }
+    }
+
+    public static void tag(UUID uuid) {
+        if (isRegular(uuid)) Affected.put(uuid, new Tagged(uuid, uuid, 200));
+    }
+
+    public static void tag(Player victim) {
+        tag(victim.getUniqueId());
     }
 }

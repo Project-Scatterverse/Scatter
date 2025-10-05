@@ -21,19 +21,19 @@ import java.util.Map;
 
 import static dev.lirox.scatter.Scatter.*;
 
-public class Events implements Listener {
-    private final Plugin plugin;
-
-
-//    public ArrayList<Material> offhand_binding_curse = new ArrayList<>();
-
-    public Events(Plugin plugin) {
-        this.plugin = plugin;
-//        offhand_binding_curse.add(Material.TOTEM_OF_UNDYING);
-//        offhand_binding_curse.add(Material.SHIELD);
-    }
-
-
+public class Events {
+//    private final Plugin plugin;
+//
+//
+////    public ArrayList<Material> offhand_binding_curse = new ArrayList<>();
+//
+//    public Events(Plugin plugin) {
+//        this.plugin = plugin;
+////        offhand_binding_curse.add(Material.TOTEM_OF_UNDYING);
+////        offhand_binding_curse.add(Material.SHIELD);
+//    }
+//
+//
 
 
 //

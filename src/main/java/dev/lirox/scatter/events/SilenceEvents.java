@@ -52,7 +52,6 @@ public class SilenceEvents implements Listener {
         Location loc = from.clone();
         loc.setPitch(to.getPitch());
         loc.setYaw(to.getYaw());
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 20, 0, false, false));
         player.teleport(loc);
     }
 

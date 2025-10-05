@@ -15,7 +15,7 @@ public abstract class Scatterred {
         this.killer = killer;
     }
 
-    public void update() {
+    public void update(Player player) {
 
     }
 

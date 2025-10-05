@@ -2,12 +2,14 @@ package dev.lirox.scatter;
 
 import dev.lirox.scatter.commands.GhostCommand;
 import dev.lirox.scatter.commands.ScatterCommand;
+import dev.lirox.scatter.commands.StateCommand;
 import dev.lirox.scatter.commands.TrapCommand;
 import dev.lirox.scatter.configs.LocaleConfig;
 import dev.lirox.scatter.configs.PlayerConfig;
-import dev.lirox.scatter.states.Ghost;
-import dev.lirox.scatter.states.Scatterred;
-import dev.lirox.scatter.states.Trapped;
+import dev.lirox.scatter.events.GhostEvents;
+import dev.lirox.scatter.events.MainEvents;
+import dev.lirox.scatter.events.SilenceEvents;
+import dev.lirox.scatter.states.*;
 import dev.lirox.scatter.utils.ParticleUtils;
 import dev.lirox.scatter.utils.PlayerUtils;
 import org.bukkit.*;
@@ -32,18 +34,19 @@ public final class Scatter extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(new Events(this), this);
+        saveDefaultConfig();
+        PlayerConfig.init(getDataFolder());
+        PlayerConfig.loadAll();
+        LocaleConfig.init(getDataFolder());
+        spawnParticlesLoop();
+
+        getServer().getPluginManager().registerEvents(new GhostEvents(), this);
+        getServer().getPluginManager().registerEvents(new SilenceEvents(), this);
+        getServer().getPluginManager().registerEvents(new MainEvents(), this);
         getCommand("scatter").setExecutor(new ScatterCommand());
         getCommand("ghost").setExecutor(new GhostCommand());
         getCommand("trap").setExecutor(new TrapCommand());
-
-        plugin = getPlugin(this.getClass());
-
-        saveDefaultConfig();
-        PlayerConfig.init(plugin.getDataFolder());
-        PlayerConfig.loadAll();
-        LocaleConfig.init(plugin.getDataFolder());
-        spawnParticlesLoop();
+        getCommand("state").setExecutor(new StateCommand());
 
         if (noMobPushTeam == null) {
             noMobPushTeam = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("noMobPush");
@@ -59,25 +62,35 @@ public final class Scatter extends JavaPlugin implements Listener {
     private void spawnParticlesLoop() {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (Map.Entry<UUID, Scatterred> entry : Affected.map.entrySet()) {
-                entry.getValue().update();
-                if (entry.getValue() instanceof Trapped trapped) {
-                    Object obj = PlayerUtils.getPlayerData(trapped.victim);
-                    if (!(obj instanceof Player player)) continue;
-                    ParticleUtils.trappedParticles(player, trapped.animationTime);
-                } else if (entry.getValue() instanceof Ghost ghost) {
-                    Object obj = PlayerUtils.getPlayerData(ghost.victim);
-                    if (!(obj instanceof Player player)) {
-                        ParticleUtils.soulParticles(ghost.death_pos, false);
-                        continue;
+                Scatterred state = entry.getValue();
+                Object obj = PlayerUtils.getPlayerData(state.victim);
+                Player player = obj instanceof Player p ? p : null;
+
+                if (player != null) state.update(player);
+
+                switch (state) {
+                    case Trapped trapped -> {
+                        if (player != null) ParticleUtils.trappedParticles(player, trapped.animationTime);
                     }
-                    if (ghost.mount != null) ghost.mount.teleport(player);
-                    player.setExp(rand.nextFloat()); // TODO: move somewhere else
-                    ParticleUtils.soulParticles(ghost.death_pos, true);
+                    case Tagged tagged -> {
+                        if (player != null) ParticleUtils.taggedParticles(player, tagged.timeout);
+                    }
+                    case Ghost ghost -> {
+                        if (player != null) {
+                            if (ghost.mount != null) ghost.mount.teleport(player);
+                            player.setExp(rand.nextFloat());
+                            ParticleUtils.soulParticles(ghost.death_pos, true);
+                        } else {
+                            ParticleUtils.soulParticles(ghost.death_pos, false);
+                        }
+                    }
+                    case Meowthpiece meowthpiece -> {
+                        if (player != null) PlayerUtils.setVisibilityToAllPlayersCornerVision(player, true, 30);
+                    }
+                    default -> {
+                    }
                 }
             }
         }, 0L, 1L);
     }
-
-
-
 }

@@ -7,12 +7,12 @@ commands:
   scatter:
     description: "* "
     usage: "/<command> uhhh well uhhhhhhhhhhhhhhhhhhhhhhhhhhh"
-#  unbreakable:
-#    description: "* toggle unbreakable"
-#    usage: "/<command>"
-#  trap:
-#    description: "* toggle trap"
-#    usage: "/<command> player (optional)"
-#  ghost:
-#    description: "* toggle ghost"
-#    usage: "/<command> player (optional)"
+  state:
+    description: "* "
+    usage: "/<command> uhhh well uhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+  trap:
+    description: "* toggle trap"
+    usage: "/<command> player (optional)"
+  ghost:
+    description: "* toggle ghost"
+    usage: "/<command> player (optional)"

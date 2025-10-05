@@ -1,5 +1,7 @@
 package dev.lirox.scatter.commands;
 
+import dev.lirox.scatter.registries.Registry;
+import dev.lirox.scatter.utils.ItemUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -10,8 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-
-import static dev.lirox.scatter.registries.Registry.SCATTER_KEY;
 
 public class ScatterCommand implements CommandExecutor {
 
@@ -52,15 +52,12 @@ public class ScatterCommand implements CommandExecutor {
             return true;
         }
 
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
+        if (item.getItemMeta() == null) {
             player.sendMessage(ChatColor.RED + "This item cannot have custom model data.");
             return true;
         }
 
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        data.set(SCATTER_KEY, PersistentDataType.INTEGER, value);
-        item.setItemMeta(meta);
+        ItemUtils.setType(item, Registry.TYPE_SCATTER);
         player.sendMessage(ChatColor.GREEN + "Done.");
         return true;
     }
