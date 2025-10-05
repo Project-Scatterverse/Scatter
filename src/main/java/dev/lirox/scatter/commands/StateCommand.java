@@ -6,6 +6,7 @@ import dev.lirox.scatter.states.Meowthpiece;
 import dev.lirox.scatter.states.Scatterred;
 import dev.lirox.scatter.states.Trapped;
 import dev.lirox.scatter.utils.PlayerUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -74,6 +75,9 @@ public class StateCommand implements CommandExecutor, TabCompleter {
             String input = args[0].toLowerCase();
             for (String sel : selectors) {
                 if (sel.startsWith(input)) result.add(sel);
+            }
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                result.add(player.getName());
             }
             return result;
         } else if (args.length == 2) {

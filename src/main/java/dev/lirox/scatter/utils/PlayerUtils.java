@@ -35,23 +35,20 @@ public class PlayerUtils {
         }
     }
 
-    public static void setVisibilityToAllPlayersCornerVision(Player player, boolean visibility, int angle) {
-        Vector dir = player.getLocation().getDirection().normalize();
+    public static void setVisibilityToAllPlayersCornerVision(Player meowthpiece, boolean visibility, int angle) {
         double cosAngle = Math.cos(Math.toRadians(angle));
 
-        for (Player other : player.getWorld().getPlayers()) {
-            if (other == player) continue;
-            if (player.getLocation().distanceSquared(other.getLocation()) > 250 * 250) continue;
-            if (isState(other, Meowthpiece.class)) {
-                setVisibilityToPlayer(other, player, true);
-                continue;
-            }
+        for (Player other : meowthpiece.getWorld().getPlayers()) {
+            if (other == meowthpiece) continue;
+            if (meowthpiece.getLocation().distanceSquared(other.getLocation()) > 250 * 250) continue;
 
-            boolean inVision = dir.dot(other.getLocation().toVector().subtract(player.getLocation().toVector()).normalize()) >= cosAngle;
+            Vector dir = other.getLocation().getDirection().normalize();
+            boolean inVision = dir.dot(meowthpiece.getLocation().toVector().subtract(other.getLocation().toVector()).normalize()) >= cosAngle;
 
-            setVisibilityToPlayer(other, player, visibility && !inVision);
+            setVisibilityToPlayer(meowthpiece, other, visibility && !inVision);
         }
     }
+
 
 
 
@@ -189,8 +186,8 @@ public class PlayerUtils {
 
     // Trapping and releasing
     public static void trap(UUID victim, UUID killer) {
-        if (!(getPlayerData(victim) instanceof Player player)) return;
-        if (!isState(victim, null)) return;
+        if (!(getPlayerData(victim) instanceof Player)) return;
+        if (!isRegular(victim)) return;
         Affected.put(victim, new Trapped(victim, killer, 3, 0, 2400));
     }
 

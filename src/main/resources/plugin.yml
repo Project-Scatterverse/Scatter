@@ -5,14 +5,11 @@ api-version: '1.21'
 prefix: "[Scatter]"
 commands:
   scatter:
-    description: "* "
-    usage: "/<command> uhhh well uhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+    description: "* apply scatter"
+    usage: "/<command> while holding an item"
+  reviver:
+    description: "* apply reviver"
+    usage: "/<command> while holding an item"
   state:
     description: "* "
-    usage: "/<command> uhhh well uhhhhhhhhhhhhhhhhhhhhhhhhhhh"
-  trap:
-    description: "* toggle trap"
-    usage: "/<command> player (optional)"
-  ghost:
-    description: "* toggle ghost"
-    usage: "/<command> player (optional)"
+    usage: "/<command> player regular/tagged/trapped/ghost/meowthpiece"

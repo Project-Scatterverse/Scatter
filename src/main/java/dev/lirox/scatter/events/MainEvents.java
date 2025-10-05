@@ -9,19 +9,23 @@ import dev.lirox.scatter.states.Trapped;
 import dev.lirox.scatter.utils.ItemUtils;
 import dev.lirox.scatter.utils.PlayerUtils;
 import dev.lirox.scatter.utils.TextUtils;
+import io.papermc.paper.event.entity.EntityMoveEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import java.util.Map;
 import java.util.Objects;
@@ -115,13 +119,14 @@ public class MainEvents implements Listener {
             return;
         }
 
-        PlayerUtils.tag(victim);
+        if (!(event.getDamager() instanceof Player damager)) return;
+
+        if (PlayerUtils.isRegular(victim) && ItemUtils.getFirstScatterItem(damager) != null) PlayerUtils.tag(victim);
 
         if (!PlayerUtils.isState(victim, Trapped.class)) return;
 
         Trapped trapped = PlayerUtils.getState(victim, Trapped.class);
 
-        if (!(event.getDamager() instanceof Player damager)) return;
 
         if (damager.getUniqueId().equals(trapped.killer) && ItemUtils.mainHand(damager).getType().isAir()) {
             PlayerUtils.release(victim);
@@ -140,4 +145,43 @@ public class MainEvents implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onSwing(PlayerAnimationEvent e) {
+        Player p = e.getPlayer();
+
+        RayTraceResult result = p.rayTraceEntities(3);
+        if (result == null) return;
+
+        Entity hit = result.getHitEntity();
+        if (!(hit instanceof Player other)) return;
+        if (!PlayerUtils.isState(other, Meowthpiece.class)) return;
+
+        p.attack(other);
+    }
+
+//    @EventHandler
+//    public void onProjectileMove(EntityMoveEvent e) {
+//        if (!(e.getEntity() instanceof Projectile proj)) return;
+//        if (!(proj.getShooter() instanceof Player shooter)) return;
+//
+//        for (Player other : proj.getWorld().getPlayers()) {
+//            if (other == shooter) continue;
+//            if (!PlayerUtils.isState(other, Meowthpiece.class)) continue;
+//
+//            if (other.getBoundingBox().contains(proj.getLocation().toVector())) {
+//                other.damage(getProjectileDamage(proj), shooter);
+//                proj.remove();
+//                break;
+//            }
+//        }
+//    }
+//    private double getProjectileDamage(Projectile proj) {
+//        if (proj instanceof Arrow a) return a.getDamage();
+//        if (proj instanceof Trident t) return t.getDamage();
+//        return .5;
+//    } // TODO: fix later
+
+
+
 }

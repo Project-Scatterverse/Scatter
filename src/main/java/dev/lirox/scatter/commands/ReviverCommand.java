@@ -9,11 +9,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
-public class ScatterCommand implements CommandExecutor {
+import java.util.Collections;
+import java.util.List;
+
+public class ReviverCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -39,7 +39,7 @@ public class ScatterCommand implements CommandExecutor {
             return true;
         }
 
-        ItemUtils.setType(item, Registry.TYPE_SCATTER);
+        ItemUtils.setProperties(item, List.of(Registry.PROP_REVIVER));
         player.sendMessage(ChatColor.GREEN + "Done.");
         return true;
     }

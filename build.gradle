@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'dev.lirox'
-version = '0.3-TEST'
+version = '0.3'
 
 repositories {
     mavenCentral()

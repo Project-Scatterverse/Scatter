@@ -1,9 +1,8 @@
 package dev.lirox.scatter;
 
-import dev.lirox.scatter.commands.GhostCommand;
+import dev.lirox.scatter.commands.ReviverCommand;
 import dev.lirox.scatter.commands.ScatterCommand;
 import dev.lirox.scatter.commands.StateCommand;
-import dev.lirox.scatter.commands.TrapCommand;
 import dev.lirox.scatter.configs.LocaleConfig;
 import dev.lirox.scatter.configs.PlayerConfig;
 import dev.lirox.scatter.events.GhostEvents;
@@ -13,14 +12,10 @@ import dev.lirox.scatter.states.*;
 import dev.lirox.scatter.utils.ParticleUtils;
 import dev.lirox.scatter.utils.PlayerUtils;
 import org.bukkit.*;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -37,6 +32,7 @@ public final class Scatter extends JavaPlugin implements Listener {
         saveDefaultConfig();
         PlayerConfig.init(getDataFolder());
         PlayerConfig.loadAll();
+        saveResource("locale.yml", false);
         LocaleConfig.init(getDataFolder());
         spawnParticlesLoop();
 
@@ -44,8 +40,7 @@ public final class Scatter extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new SilenceEvents(), this);
         getServer().getPluginManager().registerEvents(new MainEvents(), this);
         getCommand("scatter").setExecutor(new ScatterCommand());
-        getCommand("ghost").setExecutor(new GhostCommand());
-        getCommand("trap").setExecutor(new TrapCommand());
+        getCommand("reviver").setExecutor(new ReviverCommand());
         getCommand("state").setExecutor(new StateCommand());
 
         if (noMobPushTeam == null) {
@@ -85,7 +80,7 @@ public final class Scatter extends JavaPlugin implements Listener {
                         }
                     }
                     case Meowthpiece meowthpiece -> {
-                        if (player != null) PlayerUtils.setVisibilityToAllPlayersCornerVision(player, true, 30);
+                        if (player != null) PlayerUtils.setVisibilityToAllPlayersCornerVision(player, true, 45);
                     }
                     default -> {
                     }

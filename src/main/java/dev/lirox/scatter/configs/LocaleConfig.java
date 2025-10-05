@@ -12,7 +12,7 @@ public class LocaleConfig {
 
     private static File file;
     private static FileConfiguration config;
-    private static final Map<String, String> messages = new HashMap<>();
+    public static final Map<String, String> messages = new HashMap<>();
 
     private LocaleConfig() {}
 

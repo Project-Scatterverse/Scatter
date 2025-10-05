@@ -1,7 +1,5 @@
-Corner vision visible Meowthpiece
 BorderTraveler (e.g. broken lesser divinity)
 VoidBury (like BorderTraveler but for the void)
-Fix those damn chains' particles
 Implement durability usage
 Make scatter items be list of properties (for more dynamic items)
 Optimize code, make it be more consistent (stop using both thingThing and thing_thing)
